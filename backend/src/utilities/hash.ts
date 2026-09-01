@@ -11,7 +11,7 @@ export const signRefreshToken = (userId: string) => {
 };
 
 export const verifyAccessToken = (token: string) => {
-  return  jwt.verify(token, env.ACCESS_SECRET) as TokenPayload;
+  return jwt.verify(token, env.ACCESS_SECRET) as TokenPayload;
 };
 
 export const verifyRefreshToken = (token: string) => {

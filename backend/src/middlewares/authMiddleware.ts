@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utilities/hash.js";
 
 export const isAuthenticated = async (
@@ -16,8 +16,6 @@ export const isAuthenticated = async (
 
   try {
     const payload = verifyAccessToken(accessToken);
-
-    if (!payload) return res.status(401).json({ message: "Unauthorized" });
 
     req.userId = payload.userId;
     next();
