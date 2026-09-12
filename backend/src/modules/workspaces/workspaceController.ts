@@ -80,7 +80,7 @@ export const getWorkspaces = async (req: Request, res: Response) => {
 export const editWorkspace = async (req: Request, res: Response) => {
   try {
     const userId = req.userId;
-    const { workspaceId } = req.params as { workspaceId : string };
+    const { workspaceId } = req.params as { workspaceId: string };
     const { name } = req.body;
 
     if (!userId) {
@@ -194,4 +194,114 @@ export const deleteWorkspace = async (req: Request, res: Response) => {
       message: "Internal server error",
     });
   }
+};
+
+export const createBoard = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { workspaceId } = req.params as { workspaceId: string };
+    const { title } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    if (!workspaceId) {
+      return res.status(400).json({
+        message: "Workspace ID is required",
+      });
+    }
+
+    if (typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({
+        message: "Invalid title",
+      });
+    }
+
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        id: workspaceId,
+        userId,
+      },
+    });
+
+    if (!workspace) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+
+    const board = await prisma.board.create({
+      data: {
+        title: title.trim(),
+        workspaceId,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Board created successfully",
+      board,
+    });
+  } catch (error) {
+    console.error("Create board error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getBoards = async (req: Request, res: Response) => {
+    try {
+        const userId = req.userId;
+        const { workspaceId } = req.params as { workspaceId: string };
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+
+        if (!workspaceId) {
+            return res.status(400).json({
+                message: "Workspace ID is required",
+            });
+        }
+
+        const workspace = await prisma.workspace.findFirst({
+            where: {
+                id: workspaceId,
+                userId,
+            },
+        });
+
+        if (!workspace) {
+            return res.status(404).json({
+                message: "Workspace not found",
+            });
+        }
+
+        const boards = await prisma.board.findMany({
+            where: {
+                workspaceId,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        return res.status(200).json({
+            message: "Boards fetched successfully",
+            boards,
+        });
+
+    } catch (error) {
+        console.error("Get boards error:", error);
+
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 };
