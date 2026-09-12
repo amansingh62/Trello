@@ -233,12 +233,23 @@ export const createBoard = async (req: Request, res: Response) => {
       });
     }
 
-    const board = await prisma.board.create({
-      data: {
-        title: title.trim(),
-        workspaceId,
-      },
+    const board = await prisma.$transaction(async (tx) => {
+    const newBoard = await tx.board.create({
+        data: {
+            title: title.trim(),
+            workspaceId,
+        },
     });
+
+    await tx.boardMember.create({
+        data: {
+            userId,
+            boardId: newBoard.id,
+        },
+    });
+
+    return newBoard;
+});
 
     return res.status(201).json({
       message: "Board created successfully",
