@@ -5,12 +5,12 @@ import { isAuthenticated } from "../../middlewares/authMiddleware.js";
 const router = Router();
 
 router.get("/", isAuthenticated, getWorkspaces);
+router.get("/:workspaceId/boards", isAuthenticated, getBoards);
 
 router.post("/", isAuthenticated, workspace);
 router.patch("/:workspaceId", isAuthenticated, editWorkspace);
 router.delete("/:workspaceId", isAuthenticated, deleteWorkspace);
 
 router.post("/:workspaceId/boards", isAuthenticated, createBoard);
-router.get("/:workspaceId/boards", isAuthenticated, getBoards);
 
 export default router;
