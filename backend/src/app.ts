@@ -7,6 +7,7 @@ import { env } from "./config/db.js";
 import workspaceRoutes from "./modules/workspaces/workspaceRoutes.js";
 import boardRoutes from "./modules/boards/boardRoutes.js";
 import listRoutes from "./modules/lists/listRoutes.js";
+import cardRoutes from "./modules/cards/cardRoutes.js";
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/workspace", workspaceRoutes);
 app.use("/api/boards", boardRoutes);
 app.use("/api/lists", listRoutes);
+app.use("/api/cards", cardRoutes);
 
 export default app;

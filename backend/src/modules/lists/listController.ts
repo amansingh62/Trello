@@ -136,3 +136,141 @@ export const deleteList = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const createCard = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { listId } = req.params as { listId: string };
+    const { name, description, position } = req.body;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    if (!listId) {
+      return res.status(400).json({
+        message: "Invalid List",
+      });
+    }
+
+    if (!name || !name.trim() || position === undefined) {
+      return res.status(400).json({
+        message: "Invalid Inputs",
+      });
+    }
+
+    const list = await prisma.list.findUnique({
+      where: {
+        id: listId,
+      },
+    });
+
+    if (!list) {
+      return res.status(404).json({
+        message: "List not found",
+      });
+    }
+
+    const boardMember = await prisma.boardMember.findUnique({
+      where: {
+        userId_boardId: {
+          userId,
+          boardId: list.boardId,
+        },
+      },
+    });
+
+    if (!boardMember) {
+      return res.status(403).json({
+        message: "Not a board member",
+      });
+    }
+
+    const card = await prisma.card.create({
+      data: {
+        name: name.trim(),
+        description: description?.trim() || null,
+        position,
+        listId,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Card created successfully",
+      card,
+    });
+  } catch (error) {
+    console.error("Create card error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getCards = async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { listId } = req.params as { listId: string };
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    if (!listId) {
+      return res.status(400).json({
+        message: "Invalid List",
+      });
+    }
+
+    const list = await prisma.list.findUnique({
+      where: {
+        id: listId,
+      },
+    });
+
+    if (!list) {
+      return res.status(404).json({
+        message: "List not found",
+      });
+    }
+
+    const boardMember = await prisma.boardMember.findUnique({
+      where: {
+        userId_boardId: {
+          userId,
+          boardId: list.boardId,
+        },
+      },
+    });
+
+    if (!boardMember) {
+      return res.status(403).json({
+        message: "Not a board member",
+      });
+    }
+
+    const cards = await prisma.card.findMany({
+      where: {
+        listId,
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
+
+    return res.status(200).json({
+      cards,
+    });
+  } catch (error) {
+    console.error("Get cards error:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
